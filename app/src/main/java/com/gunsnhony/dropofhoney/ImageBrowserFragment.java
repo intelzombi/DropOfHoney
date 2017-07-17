@@ -44,16 +44,13 @@ public class ImageBrowserFragment extends Fragment{
     private ImageView recentImage;
     private Button FlkrGetRecentBtn;
     private Button FlkrOwnerBtn;
-    Bitmap defaultBit;
     FlickrRestXML frx = new FlickrRestXML();
     PhotoFillerHandler pfHandler;
 
     String Tag = "ImageBrowser";
     String ownerLink = "";
 
-    private int currentImage = 0;
-    int ImageCount;
-    boolean isNext = true;
+
 
     private final int Max_Swipe_Distance = 900;
     private final int Min_Swipe_Velocity = 80;
@@ -101,7 +98,6 @@ public class ImageBrowserFragment extends Fragment{
         {
             rrLisener.onRestReady(photos);
             Log.d(Tag, "RestResponseTask RestReady photos returned to rrListener");
-            //AllPhotos.setAllPhotos(photos);
         }
     }
 
@@ -114,7 +110,6 @@ public class ImageBrowserFragment extends Fragment{
                 for(int i = 0; i < photos.size(); i++)
                 {
                     pfHandler.pumpMessage(photos.get(i));
-                    // wrong place AllPhotos.getPhotoDeque().push(photos.get(i));
                 }
             }
         });
@@ -154,7 +149,7 @@ public class ImageBrowserFragment extends Fragment{
             @Override
             public void PhotoRetrieved(Photo photo) {
                 AllPhotos.getPhotoDeque().push(photo);
-               // wrong place pfHandler.pumpMessage(photo);
+                Log.d(Tag, "Photo Retrieved from Photo Filler Handler : Push to Photo Deque");
             }
         });
 
@@ -177,8 +172,9 @@ public class ImageBrowserFragment extends Fragment{
         FlkrOwnerBtn = (Button) imageBrowserView.findViewById(R.id.ownerSearchButton);
 
         Photo photo;
-        if(AllPhotos.getAllPhotos().size() > 0 && AllPhotos.getPhoto(0) != null && AllPhotos.getPhoto(0).bitmap != null) {
-            photo = AllPhotos.getPhoto(0);
+        if(!AllPhotos.getPhotoDeque().isEmpty())
+        {
+            photo = AllPhotos.getPhotoDeque().getFirst();
             recentImage.setImageBitmap(photo.bitmap);
             titleView.setText(photo.title);
         }else{
@@ -192,7 +188,7 @@ public class ImageBrowserFragment extends Fragment{
             photo.title = "Simple Fractal";
             photo.retrieveURL = "https://farm3.staticflickr.com/2831/11467918723_dea8ddee9b_s.jpg";
             AllPhotos.DefaultPhoto = photo;
-            AllPhotos.getAllPhotos().add(photo);
+            AllPhotos.getPhotoDeque().push(photo);
         }
         FlkrGetRecentBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -276,17 +272,11 @@ public class ImageBrowserFragment extends Fragment{
 
     public void NextImage()
     {
-        isNext = true;
-        currentImage ++;
-        //UpdateImage();
         SpinQueue(true);
     }
 
     public void PrevImage()
     {
-        isNext = false;
-        currentImage --;
-        //UpdateImage();
         SpinQueue(false);
     }
 
@@ -311,33 +301,6 @@ public class ImageBrowserFragment extends Fragment{
             } else {
                 if (!AllPhotos.getPhotoDeque().isEmpty())
                     SpinQueue(forward);
-            }
-        }
-    }
-    public void UpdateImage()
-    {
-        ImageCount = AllPhotos.getAllPhotos().size();
-        if( currentImage < 0)
-            if( ImageCount == 0)
-                currentImage = 0;
-            else
-                currentImage = ImageCount -1;
-        if( currentImage >= ImageCount)
-            currentImage = 0;
-        final Bitmap bm = AllPhotos.getPhoto(currentImage).bitmap;
-        if( bm != null) {
-            recentImage.setImageBitmap(bm);
-            Photo photo = AllPhotos.getPhoto(currentImage);
-            titleView.setText(photo.title);
-            ownerLink = frx.assembleFlickerOwnerSearchURL(photo.owner, photo.size);
-        }
-        else {
-            if( currentImage != 0) {
-                if (isNext)
-                    currentImage++;
-                else
-                    currentImage--;
-                UpdateImage();
             }
         }
     }

@@ -15,13 +15,14 @@
             android:id="@+id/recentStreamBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Explore Stream" />
+            android:gravity="center_horizontal"
+            android:text="Flickr Fresh" />
 
         <ImageView
             android:id="@+id/RecentImageView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:layout_gravity="center_vertical|center_horizontal|center"
             android:adjustViewBounds="true"
             android:scaleType="fitXY"
             android:src="@drawable/tree" />
@@ -31,7 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:gravity="center"
+            android:gravity="center_horizontal|center"
             android:padding="5.0dip"
             android:text="Title"
             android:textColor="#ff000000"
@@ -42,7 +43,8 @@
             android:id="@+id/ownerSearchButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Explore Stream" />
+            android:gravity="center_horizontal|center"
+            android:text="Explore This Stream" />
 
     </LinearLayout>
 </FrameLayout>

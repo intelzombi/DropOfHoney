@@ -27,25 +27,11 @@ public class primary extends FragmentActivity {
         AddImageBrowserFragment();
     }
 
-    protected int ProxyID(String idType, String label )
-    {
-        int ContainerID = 0;
-        try
-        {
-            ContainerID = DropOfHoneyApplication.RProxy.get(idType, label);
-        } catch (Exception e){
-            Log.e(TAG, "Failed to find RProxy lookup id: " + idType + " : " + label);
-        }
-        return ContainerID;
-    }
-
     protected void AddImageBrowserFragment()
     {
         Log.d(TAG, "adding Image Browser Fragment");
-        int fragmentContainerId =  ProxyID("id", "ImageBrowserFragmentPH");
         imageBrowserFragment = new ImageBrowserFragment();
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        //ft.replace(fragmentContainerId, imageBrowserFragment, "IBF_TAG");
         ft.replace(R.id.ImageBrowserFragmentPH, imageBrowserFragment, "IBF_TAG");
         ft.hide(imageBrowserFragment);
         ft.commit();
