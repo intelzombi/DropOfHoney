@@ -4,6 +4,9 @@ package com.gunsnhony.dropofhoney.support;
  * Created by Hugh on 7/14/2017.
  */
 import android.net.Uri;
+import android.support.v4.util.ArraySet;
+import android.util.Log;
+
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -11,11 +14,14 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 public class FlickrRestXML {
     public static final String FlickerGetRecentType     = "FLKR_GET_RECENT";
     public static final String FlickerOwnerSearchType   = "FLKR_OWN_SEARCH";
     public static final String FlickerSearchType        = "FLKR_KEY_WORD_SEARCH";
+    public static Set<String> idSet = new ArraySet<>();
+    public static Set<String> requestSet = new ArraySet<>();
 
     public static ArrayList<Photo> getRecentFlickrPhotos(String urlString, String photoSize, int count) throws XmlPullParserException, IOException
     {
@@ -31,18 +37,42 @@ public class FlickrRestXML {
                 if( xpParser.getName().equals("photo"))
                 {
                     Photo photo = new Photo();
-                    photo.photoId     = xpParser.getAttributeValue(null, "id");
-                    photo.owner       = xpParser.getAttributeValue(null, "owner");
-                    photo.secret      = xpParser.getAttributeValue(null, "secret");
-                    photo.serverId    = xpParser.getAttributeValue(null, "server");
-                    photo.farmId      = xpParser.getAttributeValue(null, "farm");
-                    photo.title       = xpParser.getAttributeValue(null, "title");
-                    photo.retrieveURL = xpParser.getAttributeValue(null, photoSize);
-                    photos.add(photo);
+                    String photoId = xpParser.getAttributeValue(null, "id");
+                    if(!idSet.contains(photoId)) {
+                        photo.photoId = photoId;
+                        photo.owner = xpParser.getAttributeValue(null, "owner");
+                        photo.secret = xpParser.getAttributeValue(null, "secret");
+                        photo.serverId = xpParser.getAttributeValue(null, "server");
+                        photo.farmId = xpParser.getAttributeValue(null, "farm");
+                        photo.title = xpParser.getAttributeValue(null, "title");
+                        photo.retrieveURL = xpParser.getAttributeValue(null, photoSize);
+                        if(photo.retrieveURL == null)
+                            photo.retrieveURL = assembleFlickrOwnerPhotoURL(photo, photo.size);
+                        photos.add(photo);
+                        requestSet.add(photoId);
+                    }
                 }
             }
-            eventType = xpParser.next();
+            int tries = 0, max_tries = 4;
+            boolean success = false;
+            while(!success && tries < max_tries)
+            try {
+                tries++;
+                eventType = xpParser.next();
+                success = true;
+            } catch (XmlPullParserException xppe)
+            {
+                Log.e("FlickrRest", "Flickr Stream photo XMLPullParserException :" + xppe.getLocalizedMessage());
+                if(tries == max_tries)
+                    throw xppe;
+            }
         }while (eventType != xpParser.END_DOCUMENT && photos.size() < count);
+        if(photos.size()!=0) {
+            for (String v : requestSet) {
+                idSet.add(v);
+            }
+            idSet.clear();
+        }
         return photos;
     }
 
@@ -70,7 +100,19 @@ public class FlickrRestXML {
                     photos.add(photo);
                 }
             }
-            eventType = xpParser.next();
+            int tries = 0, max_tries = 4;
+            boolean success = false;
+            while(!success && tries < max_tries)
+                try {
+                    tries++;
+                    eventType = xpParser.next();
+                    success = true;
+                } catch (XmlPullParserException xppe)
+                {
+                    Log.e("FlickrRest", "Owner photo XMLPullParserException :" + xppe.getLocalizedMessage());
+                    if(tries == max_tries)
+                        throw xppe;
+                }
         }while (eventType != xpParser.END_DOCUMENT && photos.size() < count);
         return photos;
     }

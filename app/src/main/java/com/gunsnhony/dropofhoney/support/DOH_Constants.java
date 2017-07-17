@@ -7,13 +7,14 @@ import android.net.Uri;
  */
 
 public class DOH_Constants {
-    public static final String FlikrApiKey                    = "<YOUR_FLICKER_API_KEY_GOES_HERE>";
-    public static final String FlikrApiSecret                 = "<YOUR_FLICKER_API_SECRET_GOES_HERE>";
+    public static final String FlikrApiKey                    = "<YOUR_FLICKR_API_KEY_GOES_HERE>";
+    public static final String FlikrApiSecret                 = "<YOUR_FLICKR_API_SECRET_GOES_HERE>";
     public static final String TwitterAccessToken             = "<YOUR_TWITTER_ACCESS_TOKEN_GOES_HERE>";
     public static final String TwitterAccessTokenScret        = "<YOUR_TWITTER_ACCESS_TOKEN_SECRET_GOES_HERE>";
     public static final String FlikrApiRoot                   = "https://api.flickr.com/services/rest/";
     public static final String FlikrGetRecent                 = "flickr.photos.getRecent";
     public static final String FlikrPhotoSearch               = "flickr.photos.search";
+    public static final String FlikrPhotoSearchSmallExtra     = "url_s";
     public static final String FlikrPhotoSearchMediumExtra    = "url_m";
     public static final String FlikrPhotoSearchOriginalExtra  = "url_o";
 

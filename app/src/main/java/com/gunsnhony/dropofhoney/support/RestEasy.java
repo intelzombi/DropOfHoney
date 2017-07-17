@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;  // vs android.net.Uri vs java.net.URI :=>  Google vs Java:  Ip4 vs Ip4 & Ip6: simple exceptions vs verbose exceptions
 import java.net.URL;
 import javax.net.ssl.HttpsURLConnection;
@@ -62,8 +63,10 @@ public class RestEasy {
                     urlConnection.getErrorStream();
                 e.printStackTrace();
             } finally {
-                in.close();
-                urlConnection.disconnect();
+                if(in != null)
+                    in.close();
+                if(urlConnection != null)
+                    urlConnection.disconnect();
             }
         } catch (Exception e) {
             Log.e("RestEasy", e.getMessage());
@@ -87,13 +90,21 @@ public class RestEasy {
                     return null;
                 }
                 bm = BitmapFactory.decodeStream(in);
-                } catch (IOException e) {
+            } catch (MalformedURLException mue) {
+                Log.e("RestEasy", "Malformed URL: " + urlString + "\n" + mue.getLocalizedMessage(), mue);
+            }catch (IOException e) {
                 if (urlConnection != null)
-                    urlConnection.getErrorStream();
-                e.printStackTrace();
-            } finally {
-                in.close();
-                urlConnection.disconnect();
+                    Log.e("RestEasy", "" + urlConnection.getErrorStream(), e);
+                    e.printStackTrace();
+            } catch (OutOfMemoryError oome) {
+                Log.e("RestEasy", "Out of Memory creating a bitmap with url: " + urlString + "\n" + oome.getLocalizedMessage() , oome);
+                oome.printStackTrace();
+            }
+            finally {
+                if(in!=null)
+                    in.close();
+                if(urlConnection != null)
+                    urlConnection.disconnect();
             }
         } catch (Exception e) {
             Log.e("RestEasy", e.getMessage());

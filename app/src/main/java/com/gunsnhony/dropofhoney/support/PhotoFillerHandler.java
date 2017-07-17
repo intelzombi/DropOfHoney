@@ -1,4 +1,4 @@
-package com.gunsnhony.dropofhoney;
+package com.gunsnhony.dropofhoney.support;
 
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -52,15 +52,23 @@ public class PhotoFillerHandler extends HandlerThread {
     }
 
     public void pumpMessage(Photo photo) {
-        Log.d("EasyHandler","Pump Photo" + photo.retrieveURL);
-        handler
-                .obtainMessage(MESSAGE_RETRIEVE, photo)
-                .sendToTarget();
+        Log.d("EasyHandler","Pump Photo URL: " + photo.retrieveURL);
+        if( photo.retrieveURL != null) {
+            handler
+                    .obtainMessage(MESSAGE_RETRIEVE, photo)
+                    .sendToTarget();
+        }
     }
 
     private void handleBitmap(final Photo photo)
     {
-        photo.bitmap = RestEasy.urlToBitmap(photo.retrieveURL);
-        ptoListener.PhotoRetrieved(photo);
+        if(photo.retrieveURL != null) {
+            photo.bitmap = RestEasy.urlToBitmap(photo.retrieveURL);
+            if (photo.bitmap == null)
+                Log.d("EasyHandler", "Bitmap came back null. URL: " + photo.retrieveURL);
+            ptoListener.PhotoRetrieved(photo);
+        }else{
+            Log.d("EasyHandler", "URL came back null");
+        }
     }
 }
