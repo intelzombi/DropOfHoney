@@ -10,9 +10,10 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class FlickrRestXML {
-
+    public static boolean usingMap = false;
     public static final String FlickerGetRecentType     = "FLKR_GET_RECENT";
     public static final String FlickerOwnerSearchType   = "FLKR_OWN_SEARCH";
     public static final String FlickerSearchType        = "FLKR_KEY_WORD_SEARCH";
@@ -42,7 +43,7 @@ public class FlickrRestXML {
     public static ArrayList<Photo> getRecentFlickrPhotos(String urlString, String photoSize, int count) throws XmlPullParserException, IOException
     {
         ArrayList<Photo> photos = new ArrayList<>();
-
+        HashMap<String, Photo> photoMap = new HashMap<>();
         // www.xmlpull.org
         //directly from http://www.xmlpull.org/v1/download/unpacked/src/java/samples/MyXmlPullApp.java
         XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
@@ -74,8 +75,13 @@ public class FlickrRestXML {
                     photo.farmId      = xpParser.getAttributeValue(null, "farm");
                     photo.title       = xpParser.getAttributeValue(null, "title");
                     photo.retrieveURL = xpParser.getAttributeValue(null, photoSize);
-                    photo.bitmap      = RestEasy.GetPhotoRestStream(photo.retrieveURL);
-                    photos.add(photo);
+                    if(!usingMap)
+                    {
+                        //photo.bitmap      = RestEasy.GetPhotoRestStream(photo.retrieveURL);
+                        photos.add(photo);
+                    }else{
+                        photoMap.put(photo.photoId, photo);
+                    }
                 }
             }
             eventType = xpParser.next();
@@ -86,6 +92,7 @@ public class FlickrRestXML {
     public static ArrayList<Photo> getOwnerFlickrPhotos(String urlString, String photoSize, int count) throws XmlPullParserException, IOException
     {
         ArrayList<Photo> photos = new ArrayList<>();
+        HashMap<String, Photo> photoMap = new HashMap<>();
 
         // www.xmlpull.org
         //directly from http://www.xmlpull.org/v1/download/unpacked/src/java/samples/MyXmlPullApp.java
@@ -117,8 +124,14 @@ public class FlickrRestXML {
                     photo.farmId      = xpParser.getAttributeValue(null, "farm");
                     photo.title       = xpParser.getAttributeValue(null, "title");
                     photo.retrieveURL = assembleFlickrOwnerPhotoURL(photo, photoSize.substring(photoSize.length()-1));
-                    photo.bitmap      = RestEasy.GetPhotoRestStream(photo.retrieveURL);
-                    photos.add(photo);
+                    if(!usingMap)
+                    {
+                        //photo.bitmap      = RestEasy.GetPhotoRestStream(photo.retrieveURL);
+                        photos.add(photo);
+                    }else{
+                        photoMap.put(photo.photoId, photo);
+                    }
+
                 }
             }
             eventType = xpParser.next();

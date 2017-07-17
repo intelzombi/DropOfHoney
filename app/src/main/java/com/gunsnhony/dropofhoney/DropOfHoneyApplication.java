@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.util.Log;
 
 import com.gunsnhony.dropofhoney.support.AllPhotos;
+import com.gunsnhony.dropofhoney.support.FlickrRestXML;
 import com.gunsnhony.dropofhoney.support.RProxy;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class DropOfHoneyApplication extends Application {
         }catch (Exception e) {
             Log.e("DropOfHoneyApplication", "Failed initialize RProxy.", e);
         }
+        AllPhotos.usingMap = FlickrRestXML.usingMap = false;
     }
 
     @Override

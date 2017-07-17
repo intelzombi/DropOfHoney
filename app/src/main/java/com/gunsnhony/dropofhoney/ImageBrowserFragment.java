@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -22,6 +23,7 @@ import com.gunsnhony.dropofhoney.support.AllPhotos;
 import com.gunsnhony.dropofhoney.support.DOH_Constants;
 import com.gunsnhony.dropofhoney.support.FlickrRestXML;
 import com.gunsnhony.dropofhoney.support.Photo;
+import com.gunsnhony.dropofhoney.support.RestReadyListener;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -35,7 +37,7 @@ import java.util.concurrent.ExecutionException;
  * Created by Hugh on 7/12/2017.
  */
 
-public class ImageBrowserFragment extends Fragment {
+public class ImageBrowserFragment extends Fragment{
     private Context context;
     View imageBrowserView = null;
     private TextView titleView;
@@ -44,9 +46,9 @@ public class ImageBrowserFragment extends Fragment {
     private Button FlkrOwnerBtn;
     Bitmap defaultBit;
     FlickrRestXML frx = new FlickrRestXML();
-    PhotoFillerHandler<Photo> photoFillHandler;
+    PhotoFillerHandler pfHandler;
 
-    String Tag = "GESTURE";
+    String Tag = "ImageBrowser";
     String ownerLink = "";
 
     private int currentImage = 0;
@@ -58,8 +60,16 @@ public class ImageBrowserFragment extends Fragment {
 
     public class RestResponseTask extends AsyncTask<String, Void, ArrayList<Photo>> {
 
+        private RestReadyListener rrLisener;
+
+        public RestResponseTask(RestReadyListener rrl)
+        {
+            this.rrLisener = rrl;
+        }
+
         @Override
         protected ArrayList<Photo> doInBackground(String ... restCalls) {
+            Log.d(Tag, "RestResponseTask start doInBackground");
             ArrayList<Photo> photos = new ArrayList<>();
             FlickrRestXML frx = new FlickrRestXML();
             Activity activity = getActivity();
@@ -87,14 +97,27 @@ public class ImageBrowserFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(ArrayList<Photo> photos) {
-            AllPhotos.setAllPhotos(photos);
+        protected void onPostExecute(ArrayList<Photo> photos)
+        {
+            rrLisener.onRestReady(photos);
+            Log.d(Tag, "RestResponseTask RestReady photos returned to rrListener");
+            //AllPhotos.setAllPhotos(photos);
         }
     }
 
     private boolean populatePhotoStream(String restCallType, String urlString, String size, String count ){
         AllPhotos.removeAll();
-        RestResponseTask rrt = new RestResponseTask();
+        RestResponseTask rrt = new RestResponseTask(new RestReadyListener() {
+            @Override
+            public void onRestReady(ArrayList<Photo> photos) {
+                Log.d(Tag, "Processing RestReady photos to Photo Filler Handler");
+                for(int i = 0; i < photos.size(); i++)
+                {
+                    pfHandler.pumpMessage(photos.get(i));
+                    // wrong place AllPhotos.getPhotoDeque().push(photos.get(i));
+                }
+            }
+        });
         rrt.execute(restCallType, urlString, size, count);
         // TODO Do I need this really?
         try {
@@ -112,23 +135,38 @@ public class ImageBrowserFragment extends Fragment {
     @Override
     public void onAttachFragment(Fragment childFragment) {
         super.onAttachFragment(childFragment);
+        Log.d(Tag, "onAttachFragment");
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        Log.d(Tag, "onAttach");
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(Tag, "onCreate");
         context = getContext();
+        pfHandler = new PhotoFillerHandler(new Handler());
+        pfHandler.setListener(new PhotoFillerHandler.photoListener() {
+            @Override
+            public void PhotoRetrieved(Photo photo) {
+                AllPhotos.getPhotoDeque().push(photo);
+               // wrong place pfHandler.pumpMessage(photo);
+            }
+        });
+
+        pfHandler.start();
+        pfHandler.getLooper();
         populatePhotoStream(frx.FlickerGetRecentType, DOH_Constants.GetRecentURL, DOH_Constants.FlikrPhotoSearchSmallExtra, "20");
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.d(Tag, "onCreateView");
         if(imageBrowserView == null)
         {
             imageBrowserView = LayoutInflater.from(getActivity()).inflate(R.layout.image_viewer, null);
@@ -176,6 +214,13 @@ public class ImageBrowserFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         primary.showImageBrowserFragment();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        pfHandler.quit();
+        Log.i("ImageBrowser", "photo filler handler retired");
     }
 
     public View.OnTouchListener ImageTouchListner() {
@@ -233,16 +278,42 @@ public class ImageBrowserFragment extends Fragment {
     {
         isNext = true;
         currentImage ++;
-        UpdateImage();
+        //UpdateImage();
+        SpinQueue(true);
     }
 
     public void PrevImage()
     {
         isNext = false;
         currentImage --;
-        UpdateImage();
+        //UpdateImage();
+        SpinQueue(false);
     }
 
+    public void SpinQueue(boolean forward)
+    {
+        Log.d(Tag, "SpinQueue");
+        if(!AllPhotos.getPhotoDeque().isEmpty()) {
+            if (forward) {
+                Photo photo = AllPhotos.getPhotoDeque().getFirst();
+                AllPhotos.getPhotoDeque().removeFirst();
+                AllPhotos.getPhotoDeque().addLast(photo);
+            } else {
+                Photo photo = AllPhotos.getPhotoDeque().getLast();
+                AllPhotos.getPhotoDeque().removeLast();
+                AllPhotos.getPhotoDeque().addFirst(photo);
+            }
+            Photo photo = AllPhotos.getPhotoDeque().getFirst();
+            if (photo.bitmap != null) {
+                recentImage.setImageBitmap(photo.bitmap);
+                titleView.setText(photo.title);
+                ownerLink = frx.assembleFlickerOwnerSearchURL(photo.owner, photo.size);
+            } else {
+                if (!AllPhotos.getPhotoDeque().isEmpty())
+                    SpinQueue(forward);
+            }
+        }
+    }
     public void UpdateImage()
     {
         ImageCount = AllPhotos.getAllPhotos().size();

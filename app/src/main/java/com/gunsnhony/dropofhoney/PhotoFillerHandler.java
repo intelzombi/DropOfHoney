@@ -6,15 +6,20 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
 
+import com.gunsnhony.dropofhoney.support.Photo;
+import com.gunsnhony.dropofhoney.support.RestEasy;
+
 /**
  * Created by Hugh on 7/15/2017.
  */
 
-public class PhotoFillerHandler<TK> extends HandlerThread {
+public class PhotoFillerHandler extends HandlerThread {
+    private static final int MESSAGE_RETRIEVE = 1;
 
     Handler handler;
     Handler photoHandler;
-    Listener<TK> photoListener;
+    photoListener ptoListener;
+
     public PhotoFillerHandler(){super("PFH"); };
     public PhotoFillerHandler( Handler phHandler )
     {
@@ -22,8 +27,12 @@ public class PhotoFillerHandler<TK> extends HandlerThread {
         photoHandler = phHandler;
     }
 
-    public interface Listener<TK> {
-        void PhotoRetrieved(TK token, Bitmap thumbnail);
+    public interface photoListener {
+        void PhotoRetrieved(Photo photo);
+    }
+
+    public void setListener(photoListener listener) {
+        ptoListener = listener;
     }
 
 
@@ -34,24 +43,25 @@ public class PhotoFillerHandler<TK> extends HandlerThread {
             @Override
             public void handleMessage(Message msg) {
                 // is Downloaded
-                if( msg.what == 0)
+                if( msg.what == MESSAGE_RETRIEVE)
                 {
-                    TK tk = (TK) msg.obj;
-                    handleBitmap(tk);
+                    Photo photo = (Photo) msg.obj;
+                    handleBitmap(photo);
                 }
             }
         };
     }
 
-    public void pumpMessage(TK tk, String url) {
-
+    public void pumpMessage(Photo photo) {
+        Log.d("EasyHandler","Pump Photo" + photo.retrieveURL);
         handler
-                .obtainMessage(0, tk)
+                .obtainMessage(MESSAGE_RETRIEVE, photo)
                 .sendToTarget();
     }
 
-    private void handleBitmap(final TK bytes)
+    private void handleBitmap(final Photo photo)
     {
-
+        photo.bitmap = RestEasy.urlToBitmap(photo.retrieveURL);
+        ptoListener.PhotoRetrieved(photo);
     }
 }
