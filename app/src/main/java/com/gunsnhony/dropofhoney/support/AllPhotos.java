@@ -1,5 +1,7 @@
 package com.gunsnhony.dropofhoney.support;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 
 /**
@@ -8,6 +10,7 @@ import java.util.ArrayList;
 
 public class AllPhotos {
     private static ArrayList<Photo> allPhotos = new ArrayList<Photo>();
+    public static Photo DefaultPhoto = new Photo();
 
     public static ArrayList<Photo> getAllPhotos() {
 
@@ -19,7 +22,15 @@ public class AllPhotos {
     }
 
     public static Photo getPhoto(int pos) {
-        return allPhotos.get(pos);
+        int size = allPhotos.size();
+        try {
+            if( pos < size )
+                return allPhotos.get(pos);
+        }catch (ArrayIndexOutOfBoundsException aioobe) {
+            Log.e("ALLPhotos", aioobe.getMessage() + " pos referenced is : " +  Integer.toString(pos) + " and Size is : " + Integer.toString(size), aioobe);
+            aioobe.printStackTrace();
+        }
+        return DefaultPhoto;
     }
 
     public static void setPhoto(Photo photo) {

@@ -146,6 +146,15 @@ public class ImageBrowserFragment extends Fragment {
         }else{
             recentImage.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.tree));
             titleView.setText("Abstact Tree");
+            photo = new Photo();
+            photo.bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.fractal);
+            photo.size = "url_o";
+            photo.owner = "56603367@N03";
+            photo.retrieveURL =  frx.assembleFlickerOwnerSearchURL(photo.owner, photo.size );
+            photo.title = "Simple Fractal";
+            photo.retrieveURL = "https://farm3.staticflickr.com/2831/11467918723_dea8ddee9b_s.jpg";
+            AllPhotos.DefaultPhoto = photo;
+            AllPhotos.getAllPhotos().add(photo);
         }
         FlkrGetRecentBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -238,7 +247,10 @@ public class ImageBrowserFragment extends Fragment {
     {
         ImageCount = AllPhotos.getAllPhotos().size();
         if( currentImage < 0)
-            currentImage = ImageCount -1;
+            if( ImageCount == 0)
+                currentImage = 0;
+            else
+                currentImage = ImageCount -1;
         if( currentImage >= ImageCount)
             currentImage = 0;
         final Bitmap bm = AllPhotos.getPhoto(currentImage).bitmap;
