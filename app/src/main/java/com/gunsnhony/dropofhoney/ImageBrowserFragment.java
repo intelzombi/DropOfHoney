@@ -53,8 +53,8 @@ public class ImageBrowserFragment extends Fragment{
     private String Tag = "ImageBrowser";
     private String requestImageSize = DOH_Constants.FlikrPhotoSearchSmallExtra;
     private String ownerLink = "";
-    public static int ownerQueueSize = 30;
-    public static int flickrQueueSize = 30;
+    public static int ownerQueueSize = 120;
+    public static int flickrQueueSize = 120;
     public static int restRequestSize = 100;
 
 
