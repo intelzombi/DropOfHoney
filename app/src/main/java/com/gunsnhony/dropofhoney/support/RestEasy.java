@@ -13,6 +13,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;  // vs android.net.Uri vs java.net.URI :=>  Google vs Java:  Ip4 vs Ip4 & Ip6: simple exceptions vs verbose exceptions
 import java.net.URL;
+import java.util.Arrays;
+
 import javax.net.ssl.HttpsURLConnection;
 
 /**
@@ -29,6 +31,7 @@ public class RestEasy {
             do {
                 bytesRead = in.read(bytes);
                 baos.write(bytes, 0, bytesRead);
+                Arrays.fill(bytes,(byte)0);
             }while(bytesRead != -1);
         byte[] bmBA = baos.toByteArray();
         return BitmapFactory.decodeByteArray(bmBA,0,bmBA.length);
@@ -56,6 +59,7 @@ public class RestEasy {
                 do {
                     bytesRead = in.read(bytes, 0, stride);
                     feedIn += new String(bytes);
+                    Arrays.fill(bytes,(byte)0);
                 }while(bytesRead != -1);
 
             } catch (IOException e) {

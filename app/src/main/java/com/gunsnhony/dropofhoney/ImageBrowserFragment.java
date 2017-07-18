@@ -51,14 +51,15 @@ public class ImageBrowserFragment extends Fragment{
     public PhotoFillerHandler pfHandler;
 
     private String Tag = "ImageBrowser";
+    private String requestImageSize = DOH_Constants.FlikrPhotoSearchSmallExtra;
     private String ownerLink = "";
-    public static int ownerQueueSize = 50;
-    public static int flickrQueueSize = 100;
-    public static int restRequestSize = 30;
+    public static int ownerQueueSize = 30;
+    public static int flickrQueueSize = 30;
+    public static int restRequestSize = 100;
 
 
     private final int Max_Swipe_Distance = 900;
-    private final int Min_Swipe_Velocity = 80;
+    private final int Min_Swipe_Velocity = 20;
 
     public class RestResponseTask extends AsyncTask<String, Void, ArrayList<Photo>> {
 
@@ -113,64 +114,34 @@ public class ImageBrowserFragment extends Fragment{
 
     private boolean populatePhotoStream(String restCallType, String urlString, String size, String count ){
 
-        int localCount = Integer.parseInt(count);
-
-        /*  Strategy here is to reduce the load on the HandlerThread while also managing device memory limitations
-            We queue up any used photos that don't have bitmaps acquired yet and keep them until another request is made.
-            Now one could argue that the request has to be temporal so this strategy could be modified with a temporal mechanism
-            but that's pretty fancy for now.
-        */
-        if(AllPhotos.getPhotoDeque().size() > flickrQueueSize)
+        if(AllPhotos.getPhotoDeque().size() > flickrQueueSize *2)
             if(AllPhotos.isOwner)
                 AllPhotos.getPhotoDeque().clear();
             else
                 AllPhotos.removeHalf();
-        if(!AllPhotos.isOwner && AllPhotos.getResidualPhotos().size() != 0)
-        {
-            int invariant = AllPhotos.getResidualPhotos().size() < localCount ? AllPhotos.getResidualPhotos().size() : localCount;
-            for(int i = 0; i < invariant; i++)
-            {
-                pfHandler.pumpMessage(AllPhotos.getResidualPhotos().getFirst());
-                AllPhotos.getResidualPhotos().removeFirst();
-            }
-            localCount -= invariant;
-        }
         RestResponseTask rrt = new RestResponseTask(new RestReadyListener() {
             @Override
             public void onRestReady(ArrayList<Photo> photos) {
                 Log.d(Tag, "Processing RestReady photos to Photo Filler Handler");
 
-                int invariant = photos.size() < flickrQueueSize ? photos.size() : flickrQueueSize;
-                for(int i = 0; i < invariant; i++)
+                for(int i = 0; i < photos.size(); i++)
                 {
                     pfHandler.pumpMessage(photos.get(i));
                 }
-                if(photos.size() > invariant)
-                {
-                    for(int ir = invariant; ir < photos.size(); ir++)
-                    {
-                        if(photos.get(ir).bitmap != null)
-                            AllPhotos.getResidualPhotos().push(photos.get(ir));
-                        else
-                            Log.d("RestResponse", "onReadyRest null bitmap slipped through. url : " + photos.get(ir).retrieveURL);
-                    }
-                }
             }
         });
-        if(localCount > 0) {
-            String adjustedCount = Integer.toString(localCount);
-            rrt.execute(restCallType, urlString, size, adjustedCount);
-            // TODO Do I need this really?
-            try {
-                rrt.get();
-            } catch (CancellationException ce) {
-                ce.printStackTrace();
-            } catch (ExecutionException ee) {
-                ee.printStackTrace();
-            } catch (InterruptedException ie) {
-                ie.printStackTrace();
-            }
+        rrt.execute(restCallType, urlString, size, count);
+        // TODO Do I need this really?
+        try {
+            rrt.get();
+        } catch (CancellationException ce) {
+            ce.printStackTrace();
+        } catch (ExecutionException ee) {
+            ee.printStackTrace();
+        } catch (InterruptedException ie) {
+            ie.printStackTrace();
         }
+
         return true;
     }
 
@@ -257,7 +228,7 @@ public class ImageBrowserFragment extends Fragment{
             titleView.setText("Abstact Tree");
             photo = new Photo();
             photo.bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.fractal);
-            photo.size = "url_o";
+            photo.size = requestImageSize;
             photo.owner = "56603367@N03";
             photo.retrieveURL =  frx.assembleFlickerOwnerSearchURL(photo.owner, photo.size );
             photo.title = "Simple Fractal";
@@ -309,7 +280,9 @@ public class ImageBrowserFragment extends Fragment{
                                 public boolean onSingleTapUp(MotionEvent e) { return false; }
 
                                 @Override
-                                public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) { return false; }
+                                public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                                    return false;
+                                }
 
                                 @Override
                                 public void onLongPress(MotionEvent e) {}

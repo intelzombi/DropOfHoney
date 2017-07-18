@@ -7,8 +7,8 @@ import android.net.Uri;
  */
 
 public class DOH_Constants {
-    public static final String FlikrApiKey                    = "<YOUR_FLICKR_API_KEY_GOES_HERE>";
-    public static final String FlikrApiSecret                 = "<YOUR_FLICKR_API_SECRET_GOES_HERE>";
+    public static final String FlikrApiKey                    = "2c9c76745c098fe9a5ae934a6ae4545d";
+    public static final String FlikrApiSecret                 = "ef4d3a314bf7b365";
     public static final String TwitterAccessToken             = "<YOUR_TWITTER_ACCESS_TOKEN_GOES_HERE>";
     public static final String TwitterAccessTokenScret        = "<YOUR_TWITTER_ACCESS_TOKEN_SECRET_GOES_HERE>";
     public static final String FlikrApiRoot                   = "https://api.flickr.com/services/rest/";
