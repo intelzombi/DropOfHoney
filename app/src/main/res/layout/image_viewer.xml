@@ -1,90 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/refreshRecent"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
-
+<android.support.constraint.ConstraintLayout android:id="@+id/refreshRecent"
+                                             xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools"
+                                             android:layout_width="match_parent"
+                                             android:layout_height="match_parent"
+                                             android:orientation="vertical"
+                                             tools:layout_editor_absoluteY="81dp"
+                                             tools:layout_editor_absoluteX="0dp">
+    
+    
+    <ImageView
+        android:id="@+id/RecentImageView"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/tree"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintVertical_chainStyle="spread_inside"
+        android:layout_marginTop="7dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/imageTitle"
+        />
+    
+    <TextView
+        android:id="@+id/imageTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:padding="5.0dip"
+        android:text="Title"
+        android:textAlignment="center"
+        android:textColor="#ff000000"
+        android:textSize="18.0sp"
+        android:textStyle="bold"
+        app:layout_constraintDimensionRatio="W,1:1"
+        app:layout_constraintVertical_chainStyle="spread_inside"
+        app:layout_constraintBottom_toTopOf="@+id/recentStreamBtn"
+        app:layout_constraintTop_toBottomOf="@+id/RecentImageView"
+        android:layout_marginLeft="16dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintVertical_bias="0.51"
+        android:layout_marginStart="16dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintRight_toLeftOf="@+id/originalRB"
+        android:layout_marginEnd="8dp"/>
+    
     <Button
         android:id="@+id/recentStreamBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
         android:gravity="center_horizontal"
-        android:text="Flickr Fresh"
+        android:text="Fresh Flickr"
         android:textAlignment="center"
-        app:layout_constraintBottom_toTopOf="@+id/RecentImageView"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="W, 1:1"
-        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.661" />
-
-    <ImageView
-        android:id="@+id/RecentImageView"
-        android:layout_width="match_parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageTitle"
+        app:layout_constraintVertical_chainStyle="spread_inside"/>
+    
+    <RadioButton
+        android:id="@+id/thumnailRB"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="29dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        android:adjustViewBounds="true"
-        android:scaleType="fitXY"
-        android:src="@drawable/tree"
-        app:layout_constraintBottom_toTopOf="@+id/imageTitle"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="parent"
+        android:text="Thumbnail"
+        app:layout_constraintVertical_chainStyle="packed"
+        android:layout_marginEnd="56dp"
+        android:layout_marginLeft="0dp"
+        app:layout_constraintLeft_toLeftOf="@+id/ownerSearchButton"
+        android:layout_marginBottom="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/ownerSearchButton"/>
+    
+    <RadioButton
+        android:id="@+id/mediumRB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Medium"
+        app:layout_constraintVertical_chainStyle="packed"
+        android:layout_marginLeft="0dp"
+        app:layout_constraintLeft_toLeftOf="@+id/ownerSearchButton"
+        android:layout_marginBottom="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/thumnailRB"/>
+    
+    <RadioButton
+        android:id="@+id/originalRB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Original"
+        app:layout_constraintVertical_chainStyle="packed"
+        android:layout_marginLeft="0dp"
+        app:layout_constraintLeft_toLeftOf="@+id/ownerSearchButton"
+        android:layout_marginBottom="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/mediumRB"
+        android:layout_marginTop="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/imageTitle"/>
+    
+    <Button
+        android:id="@+id/ownerSearchButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal|center"
+        android:text="This Stream"
+        app:layout_constraintDimensionRatio="W, 1:1"
+        app:layout_constraintVertical_chainStyle="packed"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
-
-            <TextView
-                android:id="@+id/imageTitle"
-                android:layout_width="97dp"
-                android:layout_height="34dp"
-                android:layout_alignParentLeft="true"
-                android:layout_marginBottom="28dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_marginStart="8dp"
-                android:padding="5.0dip"
-                android:text="Title"
-                android:textAlignment="center"
-                android:textColor="#ff000000"
-                android:textSize="18.0sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@+id/ownerSearchButton"
-                app:layout_constraintDimensionRatio="W, 1:1"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintHorizontal_bias="0.501" />
-
-            <Button
-                android:id="@+id/ownerSearchButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_marginStart="8dp"
-                android:gravity="center_horizontal|center"
-                android:text="Explore This Stream"
-                app:layout_constraintDimensionRatio="W, 1:1"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                android:layout_marginBottom="29dp" />
+        app:layout_constraintTop_toBottomOf="@+id/originalRB"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintHorizontal_bias="0.884"
+        android:layout_marginTop="64dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="0dp"/>
+    
     app:layout_constraintDimensionRatio="1:1"
 
 </android.support.constraint.ConstraintLayout>
