@@ -17,7 +17,7 @@ public class Photo {
     public String photoId;
     public String secret;
     public String size = "m";
-    public String fileType = "jpg";
+    public String streamOrigin = "";
 
     // Notation Info
     public String title;

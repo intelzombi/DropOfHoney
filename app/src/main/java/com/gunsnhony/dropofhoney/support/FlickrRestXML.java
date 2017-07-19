@@ -13,7 +13,6 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Set;
 
 public class FlickrRestXML {
@@ -48,6 +47,7 @@ public class FlickrRestXML {
                         photo.retrieveURL = xpParser.getAttributeValue(null, photoSize);
                         if(photo.retrieveURL == null)
                             photo.retrieveURL = assembleFlickrOwnerPhotoURL(photo, photo.size);
+                        photo.streamOrigin = FlickerGetRecentType;
                         photos.add(photo);
                         requestSet.add(photoId);
                     }
@@ -97,6 +97,7 @@ public class FlickrRestXML {
                     photo.farmId      = xpParser.getAttributeValue(null, "farm");
                     photo.title       = xpParser.getAttributeValue(null, "title");
                     photo.retrieveURL = assembleFlickrOwnerPhotoURL(photo, photoSize.substring(photoSize.length()-1));
+                    photo.streamOrigin = FlickerOwnerSearchType;
                     photos.add(photo);
                 }
             }
@@ -121,7 +122,7 @@ public class FlickrRestXML {
         String url = Uri.parse(DOH_Constants.FlikrApiRoot).buildUpon()
                 .appendQueryParameter("method", DOH_Constants.FlikrPhotoSearch)
                 .appendQueryParameter("api_key", DOH_Constants.FlikrApiKey)
-                .appendQueryParameter("extras", DOH_Constants.FlikrPhotoSearchSmallExtra)
+                .appendQueryParameter("extras", DOH_Constants.FlikrPhotoSearchThumbExtra)
                 .appendQueryParameter("text", searchString)
                 .build().toString();
         //"https://farm" + farmId + ".staticflickr.com/" + serverId + "/" + photoId + "_" +  secret + "_" + size + "." + fileType;
@@ -137,6 +138,16 @@ public class FlickrRestXML {
                 .appendQueryParameter("user_id", userId)
                 .appendQueryParameter("extras", url_size)
                 .appendQueryParameter("format", "rest")
+                .build().toString();
+        return url;
+    }
+    
+    public static String assembleFlickerGetRecentURL(String url_size)
+    {
+        String url = Uri.parse(DOH_Constants.FlikrApiRoot).buildUpon()
+                .appendQueryParameter("method", DOH_Constants.FlikrGetRecent)
+                .appendQueryParameter("api_key", DOH_Constants.FlikrApiKey)
+                .appendQueryParameter("extras", url_size)
                 .build().toString();
         return url;
     }

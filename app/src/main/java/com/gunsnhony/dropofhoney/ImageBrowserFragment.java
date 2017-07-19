@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.gunsnhony.dropofhoney.support.AllPhotos;
@@ -40,12 +41,14 @@ import java.util.concurrent.ExecutionException;
 public class ImageBrowserFragment extends Fragment{
     private Context context;
     View imageBrowserView = null;
-
-
+    
     private TextView titleView;
     private ImageView recentImage;
     private Button FlkrGetRecentBtn;
     private Button FlkrOwnerBtn;
+    private RadioButton thumbnailRadBtn;
+    private RadioButton smallRadBtn;
+    private RadioButton mediumRadBtn;
 
     public FlickrRestXML frx = new FlickrRestXML();
     public PhotoFillerHandler pfHandler;
@@ -56,8 +59,7 @@ public class ImageBrowserFragment extends Fragment{
     public static int ownerQueueSize = 120;
     public static int flickrQueueSize = 120;
     public static int restRequestSize = 100;
-
-
+    
     private final int Max_Swipe_Distance = 900;
     private final int Min_Swipe_Velocity = 20;
 
@@ -110,15 +112,14 @@ public class ImageBrowserFragment extends Fragment{
             Log.d(Tag, "RestResponseTask RestReady photos returned to rrListener");
         }
     }
-
-
+    
     private boolean populatePhotoStream(String restCallType, String urlString, String size, String count ){
-
+        
+        if(AllPhotos.isOwner)
+            AllPhotos.getPhotoOwnerDeque().clear();
         if(AllPhotos.getPhotoDeque().size() > flickrQueueSize *2)
-            if(AllPhotos.isOwner)
-                AllPhotos.getPhotoDeque().clear();
-            else
-                AllPhotos.removeHalf();
+            AllPhotos.minimizeQueue();// AllPhotos.removeAll() and AllPhotos.removeHalf() are options here;
+        
         RestResponseTask rrt = new RestResponseTask(new RestReadyListener() {
             @Override
             public void onRestReady(ArrayList<Photo> photos) {
@@ -166,14 +167,17 @@ public class ImageBrowserFragment extends Fragment{
         pfHandler.setListener(new PhotoFillerHandler.photoListener() {
             @Override
             public void PhotoRetrieved(Photo photo) {
-                AllPhotos.getPhotoDeque().push(photo);
+                if(photo.streamOrigin == frx.FlickerGetRecentType)
+                    AllPhotos.getPhotoDeque().push(photo);
+                if(photo.streamOrigin == frx.FlickerOwnerSearchType)
+                    AllPhotos.getPhotoOwnerDeque().push(photo);
                 Log.d(Tag, "Photo Retrieved from Photo Filler Handler : Push to Photo Deque");
             }
         });
 
         pfHandler.start();
         pfHandler.getLooper();
-        populatePhotoStream(frx.FlickerGetRecentType, DOH_Constants.GetRecentURL, DOH_Constants.FlikrPhotoSearchSmallExtra, Integer.toString(restRequestSize));
+        populatePhotoStream(frx.FlickerGetRecentType, frx.assembleFlickerGetRecentURL(requestImageSize), requestImageSize, Integer.toString(restRequestSize));
     }
 
     @Nullable
@@ -184,25 +188,46 @@ public class ImageBrowserFragment extends Fragment{
         {
             imageBrowserView = LayoutInflater.from(getActivity()).inflate(R.layout.image_viewer, null);
         }
-        FlkrGetRecentBtn = (Button) imageBrowserView.findViewById(R.id.recentStreamBtn);
         recentImage = (ImageView) imageBrowserView.findViewById(R.id.RecentImageView);
         titleView = (TextView) imageBrowserView.findViewById(R.id.imageTitle);
+        thumbnailRadBtn = (RadioButton) imageBrowserView.findViewById(R.id.thumnailRB);
+        smallRadBtn = (RadioButton) imageBrowserView.findViewById(R.id.smallRB);
+        mediumRadBtn = (RadioButton) imageBrowserView.findViewById(R.id.mediumRB);
+        FlkrGetRecentBtn = (Button) imageBrowserView.findViewById(R.id.recentStreamBtn);
         FlkrOwnerBtn = (Button) imageBrowserView.findViewById(R.id.ownerSearchButton);
 
         initializeDefaultImage();
 
+        thumbnailRadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestImageSize = DOH_Constants.FlikrPhotoSearchThumbExtra;
+            }
+        });
+        smallRadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestImageSize = DOH_Constants.FlikrPhotoSearchSmallExtra;
+            }
+        });
+        mediumRadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestImageSize = DOH_Constants.FlikrPhotoSearchMediumExtra;
+            }
+        });
         FlkrGetRecentBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AllPhotos.isOwner=false;
-                populatePhotoStream(frx.FlickerGetRecentType, DOH_Constants.GetRecentURL, DOH_Constants.FlikrPhotoSearchSmallExtra, Integer.toString(flickrQueueSize));
+                populatePhotoStream(frx.FlickerGetRecentType, frx.assembleFlickerGetRecentURL(requestImageSize), requestImageSize, Integer.toString(flickrQueueSize));
             }
         });
         FlkrOwnerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AllPhotos.isOwner=true;
-                populatePhotoStream(frx.FlickerOwnerSearchType, ownerLink, DOH_Constants.FlikrPhotoSearchSmallExtra, Integer.toString(ownerQueueSize));
+                populatePhotoStream(frx.FlickerOwnerSearchType, ownerLink, requestImageSize, Integer.toString(ownerQueueSize));
             }
         });
         recentImage.setOnTouchListener( ImageTouchListner() );
@@ -235,9 +260,7 @@ public class ImageBrowserFragment extends Fragment{
             photo.retrieveURL = "https://farm3.staticflickr.com/2831/11467918723_dea8ddee9b_s.jpg";
             AllPhotos.DefaultPhoto = photo;
             AllPhotos.getPhotoDeque().push(photo);
-            AllPhotos.isOwner = true;
-            AllPhotos.getPhotoDeque().push(photo);
-            AllPhotos.isOwner = false;
+            AllPhotos.getPhotoOwnerDeque().push(photo);
         }
     }
 
@@ -308,19 +331,21 @@ public class ImageBrowserFragment extends Fragment{
     {
         Log.d(Tag, "SpinQueue");
         if(AllPhotos.getPhotoDeque().size() > 1) {
-            if (forward) {
-                Photo photo = AllPhotos.getPhotoDeque().getFirst();
-                AllPhotos.getPhotoDeque().removeFirst();
-                AllPhotos.getPhotoDeque().addLast(photo);
-            } else {
-                Photo photo = AllPhotos.getPhotoDeque().getLast();
-                AllPhotos.getPhotoDeque().removeLast();
-                AllPhotos.getPhotoDeque().addFirst(photo);
-            }
-            Photo photo = AllPhotos.getPhotoDeque().getFirst();
+            
+            if(AllPhotos.isOwner)
+                AllPhotos.spinPhotoOwnerDeque(forward);
+            else
+                AllPhotos.spinPhotoDeque(forward);
+          
+            Photo photo;
+            if(AllPhotos.isOwner)
+                photo = AllPhotos.getPhotoOwnerDeque().getFirst();
+            else
+                photo = AllPhotos.getPhotoDeque().getFirst();
             if (photo.bitmap != null) {
                 recentImage.setImageBitmap(photo.bitmap);
-                titleView.setText(photo.title);
+                String title = photo.title.length() > 70 ? photo.title.substring(0,70) : photo.title;
+                titleView.setText(title);
                 ownerLink = frx.assembleFlickerOwnerSearchURL(photo.owner, photo.size);
             } else {
                 // we shouldn't get here but if an null bitmap gets through we don't want to stall

@@ -24,14 +24,45 @@ public class AllPhotos {
         return residualPhotos;
     }
 
+    public static Deque<Photo> getPhotoOwnerDeque()
+    {
+        return photoOwnerDeque;
+    }
     public static Deque<Photo> getPhotoDeque()
     {
-        if(isOwner)
-            return photoOwnerDeque;
-        else
-            return photoDeque;
+        return photoDeque;
     }
 
+    public static void spinPhotoDeque(boolean forward)
+    {
+        if (forward) {
+            Photo photo = photoDeque.getFirst();
+            photoDeque.removeFirst();
+            photoDeque.addLast(photo);
+        } else {
+            Photo photo = photoDeque.getLast();
+            photoDeque.removeLast();
+            photoDeque.addFirst(photo);
+        }
+    }
+    
+    public static void spinPhotoOwnerDeque(boolean forward)
+    {
+        if (forward) {
+            Photo photo = photoOwnerDeque.getFirst();
+            photoOwnerDeque.removeFirst();
+            photoOwnerDeque.addLast(photo);
+        } else {
+            Photo photo = photoOwnerDeque.getLast();
+            photoOwnerDeque.removeLast();
+            photoOwnerDeque.addFirst(photo);
+        }
+    }
+    
+    // Motivation here is to remove only half of the photo stream.
+    // Additionally the removal is every other one.
+    // I can think of other strategies possibly for different user
+    // experience.
     public static void removeHalf()
     {
         if(isOwner) {
@@ -46,10 +77,37 @@ public class AllPhotos {
             for(int i=0; i<size/2; i++)
             {
                 photoDeque.removeFirst();
+                Photo photo = photoDeque.getFirst();
+                photoDeque.removeFirst();
+                photoDeque.addLast(photo);
             }
         }
     }
-
+    
+    // remove all but 10% of the queue.  Leave the user with
+    // something to flip through until more photos are added.
+    // I mix the order up so it's likely the order isn't stale
+    public static void minimizeQueue()
+    {
+        if(isOwner) {
+            int size = photoOwnerDeque.size();
+            for(int i=0; i<(size/10)*9; i++)
+            {
+                photoOwnerDeque.removeFirst();
+            }
+        }
+        else {
+            int size = photoDeque.size();
+            for(int i=0; i<(size/10)*9; i++)
+            {
+                photoDeque.removeFirst();
+                Photo photo = photoDeque.getFirst();
+                photoDeque.removeFirst();
+                photoDeque.addLast(photo);
+            }
+        }
+    }
+    
     public static void removeAll() {
         photoDeque.clear();
         photoOwnerDeque.clear();

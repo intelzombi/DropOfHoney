@@ -14,13 +14,13 @@ public class DOH_Constants {
     public static final String FlikrApiRoot                   = "https://api.flickr.com/services/rest/";
     public static final String FlikrGetRecent                 = "flickr.photos.getRecent";
     public static final String FlikrPhotoSearch               = "flickr.photos.search";
-    public static final String FlikrPhotoSearchSmallExtra     = "url_s";
-    public static final String FlikrPhotoSearchMediumExtra    = "url_m";
-    public static final String FlikrPhotoSearchOriginalExtra  = "url_o";
+    public static final String FlikrPhotoSearchThumbExtra     = "url_t";
+    public static final String FlikrPhotoSearchSmallExtra     = "url_n";
+    public static final String FlikrPhotoSearchMediumExtra    = "url_c";
 
     public static final String GetRecentURL = Uri.parse(DOH_Constants.FlikrApiRoot).buildUpon()
             .appendQueryParameter("method", DOH_Constants.FlikrGetRecent)
             .appendQueryParameter("api_key", DOH_Constants.FlikrApiKey)
-            .appendQueryParameter("extras", DOH_Constants.FlikrPhotoSearchSmallExtra)
+            .appendQueryParameter("extras", DOH_Constants.FlikrPhotoSearchThumbExtra)
             .build().toString();
 }
