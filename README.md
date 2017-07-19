@@ -6,23 +6,23 @@ Fickr Application to flip through a photo stream.
 ![layout-2017-07-18-232026_with_notations](https://user-images.githubusercontent.com/13732960/28351191-e8ed3a68-6c13-11e7-9d11-52d5b7572269.png)
 # Design choices
 What is here;
-An application that on start up loads a subset of the GetRecent Rest call list of photos and presents them to the user one at a time. The user flips forwards or backwards through the list.  The list is dynamically updated as photos are retrieved from the Photo Filler Handler (explained below).  The list is actually a Deque (double ended queue) that gets populated up to the point of max size. 
-The two buttons on the bottom allow the user to refresh the Flickr Stream or Choose to inspect the Stream of the owner of the currently presented picture. If by chance the user clicks on ower stream with the stock picture it takes the user to my Flickr Stream https://www.flickr.com/photos/56603367@N03/. The usage is kind of a game in that the user soon learns that with every refresh the flip stream changes and there is no going back. The owner stream is cleared each time you enter. so once you look at it chances are diminished that it will be in the flip stream to inspect again.  Going back to the Flickr Stream has a high chance of clearing most of the photos out of the stream so you have to decide if looking at that owners stream is valuable enough to refresh the main queue.
-Three radio buttons allow the user to choose what size photos they want to view.  While the presentation of the photos is fairly set the quality will change depending on which choice you make.  Why wouldn't you just choose the highest quality.  Response time, Memory considerations, and Bandwidth/data use.  This way the user can flip through the Flickr Stream at a low resolution and if they find a User Steam they want to inspect they can up the resolution.  The radio button choices only take affect after the next time you hit one of the refresh cycles.  So you might get into a user stream at low resolution and then hit the higher resolution button followed by the "This Stream" button and you can look at the photos at a higher quality.
+An application that on start up loads a subset of the GetRecent Rest call list of photos and presents them to the user one at a time. The user flips forwards or backwards through the list. The list is dynamically updated as photos are retrieved from the Photo Filler Handler (explained below). The list is actually a Deque (double ended queue) that gets populated up to the point of max size. 
+The two buttons on the bottom allow the user to refresh the Flickr Stream or Choose to inspect the Stream of the owner of the currently presented picture. If by chance the user clicks on ower stream with the stock picture it takes the user to my Flickr Stream https://www.flickr.com/photos/56603367@N03/. The usage is kind of a game in that the user soon learns that with every refresh the flip stream changes and there is no going back. The owner stream is cleared each time you enter. So once you look at it chances are diminished that it will be in the flip stream to inspect again. Going back to the Flickr Stream has a high chance of clearing most of the photos out of the stream so you have to decide if looking at that owners stream is valuable enough to refresh the main queue.
+Three radio buttons allow the user to choose what size photos they want to view. While the presentation of the photos is fairly set the quality will change depending on which choice you make. Why wouldn't you just choose the highest quality? Response time, Memory considerations, and Bandwidth/data use. This way the user can flip through the Flickr Stream at a low resolution and if they find a User Steam they want to inspect they can up the resolution. The radio button choices only take affect after the next time you hit one of the refresh cycles. So you might get into a user stream at low resolution and then hit the higher resolution button followed by the "This Stream" button and you can look at the photos at a higher quality.
 
-I did not implement a progress bar.  There can be some lag on first start if the internet is slow or connection is weak. I've given a couple of Stock phots so there is something view. One of the TODOs would be to maybe put a color icon above each stream showing red for just a few photos in the queue which indicates that the handler is still retrieving photos or green once the queue has x number of photos in it.  
+I did not implement a progress bar. There can be some lag on first start if the internet is slow or connection is weak. I've given a couple of Stock phots so there is something view. One of the TODOs would be to maybe put a color icon above each stream showing red for just a few photos in the queue which indicates that the handler is still retrieving photos or green once the queue has x number of photos in it.  
 
-I chose to break down the Threading into two parts. The AsyncTask is just used to retrieve the list of photos from the Rest call and partially initialize the Photo instances minus the Bitmaps.  I chose to use a HandlerThread to do the lifting of grabing the actual bitmaps and finishing out the definition of the Photo instance.  It was chosen primarily because it has a built in looper (Message Pump) to iterate through the list of Bitmap retrieval requests.
+I chose to break down the Threading into two parts. The AsyncTask is just used to retrieve the list of photos from the Rest call and partially initialize the Photo instances minus the Bitmaps. I chose to use a HandlerThread to do the lifting of grabbing the actual bitmaps and finishing out the definition of the Photo instance. It was chosen primarily because it has a built in looper (Message Pump) to iterate through the list of Bitmap retrieval requests.
 
-The UI is rough and admittedly what I spent the least amount of time on and would not be ship ready.  I used the Constrant Layout for the ImageBrowser View. It is also developed with the Phone in mind with a locked vertical orientation. It works fine on the Tablet but lots of UI tweaking would need to be done. 
+The UI is rough and admittedly what I spent the least amount of time on and would not be ship ready. I used the Constrant Layout for the ImageBrowser View. It is also developed with the Phone in mind with a locked vertical orientation. It works fine on the Tablet but lots of UI tweaking would need to be done. 
 
-I took to heart the requirement of fliping left to right (or right to left) through the photo stream so I decided against any grid view or use of adapters. I attached a View.onTouchListener for the ImageView that houses the Photo of focus.  I chose the Fling gesture to implement.  
+I took to heart the requirement of fliping left to right (or right to left) through the photo stream so I decided against any grid view or use of adapters. I attached a View.onTouchListener for the ImageView that houses the Photo of focus. I chose the Fling gesture to implement.  
 
 The Photo is a class that gets partially assembled and passed around but knows everything about itself it needs to at the point it is being queried. I felt for this simple application it would be nice to have the knowledge fully encapsulated at one common instance point so there wasn't a lot of cross talk to assemble information form different places. For instance this photo information could easily be thought of in terms of data base tables to join and query.  That would be way to heavy for this type of application. 
 
-I played around with queue sizes and refresh stategies and the choices are endless. In the end I chose fixed size queue limits with agressive purging when the queue limit is reached. I also to keep from redownloading the same photos over and over. I cache photo id's that I've already prepped once and don't instantiate or process those items again.  Keep the stream fresh!
+I played around with queue sizes and refresh stategies and the choices are endless. In the end I chose fixed size queue limits with agressive purging when the queue limit is reached. I also to keep from redownloading the same photos over and over. I cache photo id's that I've already prepped once and don't instantiate or process those items again. Keep the stream fresh!
 
-One last thing. This code was written from scratch using Android Studio 2.3 version starting with a blank activity. I used google, android developer sites, stack overflow and such to research topics and issues I ran into. But no code was copy pasted or plagerized for this exercise.  This is all me; Love it or Leave.  Thanks for taking time to preview the Drop of Honey application.  I thuroughly enjoyed the exercise. 
+One last thing. This code was written from scratch using Android Studio 2.3 version starting with a blank activity. I used google, android developer sites, stack overflow and such to research topics and issues I ran into. But no code was copy pasted or plagerized for this exercise. This is all me; Love it or Leave. Thanks for taking time to preview the Drop of Honey application. I thuroughly enjoyed the exercise. 
 
 # General Architecture
 * What follows is just a list of the class comments from the key files.  
@@ -39,13 +39,13 @@ The main user presentation is encapsulated in the ImageBrowser Fragment.
  * From a view it displays said image along with the title, and two
  * user option buttons to retrieve either more GetRecent photos or
  * choose to inspect the stream of the owner for the photo that is
- * currently being presented.  The image has a ImageTouchListner that
- * listens to Gestures.  The image listens specifically for the Fling
+ * currently being presented. The image has a ImageTouchListner that
+ * listens to Gestures. The image listens specifically for the Fling
  * gesture which is used to progress the photo by spinning the photo
  * queue and presenting the next photo.
  *
  * There is a list of radio buttons that allow the user to choose different
- * resolution photos to be retrieved.  thumbnail, small, and medium sizes.
+ * resolution photos to be retrieved; thumbnail, small, and medium sizes.
  * The ImageView used to present the Photo bitmap is constrained by size.
  * That is the photos are scaled up to fit. thumbnails can tend to be grainy
  * small is a bit harder to tell and medium looks pretty good. Since larger
@@ -74,7 +74,7 @@ The main user presentation is encapsulated in the ImageBrowser Fragment.
  
  # Photo class
  * Photo class holds the information about a photo that is needed in various parts
- * of Drop of Honey.  The goal is to have the Photo class have the information needed
+ * of Drop of Honey. The goal is to have the Photo class have the information needed
  * when asked to be able to assemble sub queries such as retrieve the owners photo stream
  * or display a bitmap associated with the photo at the time of queue entry.
  
@@ -88,15 +88,15 @@ The main user presentation is encapsulated in the ImageBrowser Fragment.
  * partial refresh
  
  # Flickr Rest XML class
- * This is the the XML parsing phase of the Rest retrieval.  This class uses
+ * This is the the XML parsing phase of the Rest retrieval. This class uses
  * the XMLPullParser mechanism to parse an xml string that is retrieved from
- * Flickr server.  the XMLPullParser uses the following spec: "http://www.xmlpull.org/"
+ * Flickr server. The XMLPullParser uses the following spec: "http://www.xmlpull.org/"
  * It also has some utility functions to assemble the needed Rest URL's
  * FlickrRestXML depends on the EasyRest Class for it's Http connection and byte retrieval.
  
  # Rest Easy class
  * RestEasy class implements the HttpURLConnection api as opposed to the
- * apache http classes.  Ultimately RestEasy is the class that takes the URL
+ * apache http classes. Ultimately RestEasy is the class that takes the URL
  * and returns the data in a form usable by the FlickrRestXML class.
  * URL in,  XML String out,  Bitmap out.
 
@@ -104,12 +104,12 @@ The main user presentation is encapsulated in the ImageBrowser Fragment.
  * The Threading to keep the UI thread from ANR baiting is broken up into two parts.
  * There is the AsyncTask which is an inner class to the Fragment which handles the
  * initial retrieval of the XML Rest strings containing the list of photo details
- * desired for download.  The PhotoFillerHandler is the work horse that retrieves the
- * individual photos. the HandlerThread was chosen specifically because it has a looper
+ * desired for download. The PhotoFillerHandler is the work horse that retrieves the
+ * individual photos. The HandlerThread was chosen specifically because it has a looper
  * or "message pump"
  * It takes the parthially assembled photos presented by the AsyncTask and the
  * FlickrRestXML class and serially retrieves the bitmap for each photo and stores
- * it in the Photo instance.  Once the bitmap is retrieved The Photo is returned back
+ * it in the Photo instance. Once the bitmap is retrieved The Photo is returned back
  * to the handler listener int the Browser fragment.
  
  # Rest Response Async Task class
