@@ -1,15 +1,17 @@
 package com.gunsnhony.dropofhoney.support;
 
-import android.util.Log;
-
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
-import java.util.HashMap;
-import java.util.Queue;
 
 /**
  * Created by Hugh on 7/12/2017.
+ * Photo Holder class
+ * Respository for Default stock photos
+ * photoDeque hold the returned photos from the Flickr GetRecent Rest call
+ * photoOwnerDeque holds the stream of interest photos (owner photos).
+ * There are Spin funtions to sping the queues forward or backward.
+ * Utilities for clearing the queues as well as diminishing the size for
+ * partial refresh
  */
 
 public class AllPhotos {
@@ -35,6 +37,8 @@ public class AllPhotos {
 
     public static void spinPhotoDeque(boolean forward)
     {
+        if(photoDeque.isEmpty())
+            photoDeque.push(DefaultPhoto);
         if (forward) {
             Photo photo = photoDeque.getFirst();
             photoDeque.removeFirst();
@@ -48,6 +52,8 @@ public class AllPhotos {
     
     public static void spinPhotoOwnerDeque(boolean forward)
     {
+        if(photoOwnerDeque.isEmpty())
+            photoOwnerDeque.push(DefaultPhoto);
         if (forward) {
             Photo photo = photoOwnerDeque.getFirst();
             photoOwnerDeque.removeFirst();

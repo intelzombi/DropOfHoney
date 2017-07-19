@@ -5,11 +5,18 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
 
-import com.gunsnhony.dropofhoney.support.Photo;
-import com.gunsnhony.dropofhoney.support.RestEasy;
-
 /**
  * Created by Hugh on 7/15/2017.
+ * The Threading to keep the UI thread from ANR baiting is broken up into two parts.
+ * There is the AsyncTask which is an inner class to the Fragment which handles the
+ * initial retrieval of the XML Rest strings containing the list of photo details
+ * desired for download.  The PhotoFillerHandler is the work horse that retrieves the
+ * individual photos. the HandlerThread was chosen specifically because it has a looper
+ * or "message pump"
+ * It takes the parthially assembled photos presented by the AsyncTask and the
+ * FlickrRestXML class and serially retrieves the bitmap for each photo and stores
+ * it in the Photo instance.  Once the bitmap is retrieved The Photo is returned back
+ * to the handler listener int the Browser fragment.
  */
 
 public class PhotoFillerHandler extends HandlerThread {
@@ -33,7 +40,6 @@ public class PhotoFillerHandler extends HandlerThread {
     public void setListener(photoListener listener) {
         ptoListener = listener;
     }
-
 
     @Override
     protected void onLooperPrepared() {

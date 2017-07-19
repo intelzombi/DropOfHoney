@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
         android:scaleType="fitCenter"
-        android:src="@drawable/tree"
+        android:src="@drawable/dragontree"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintVertical_chainStyle="spread_inside"
@@ -49,7 +49,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginRight="8dp"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintRight_toLeftOf="@+id/mediumRB"
+        app:layout_constraintRight_toLeftOf="@+id/sizeRbGroup"
         android:layout_marginEnd="8dp"/>
     
     <Button

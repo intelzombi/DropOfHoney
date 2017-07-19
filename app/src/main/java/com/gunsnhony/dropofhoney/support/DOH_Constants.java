@@ -4,6 +4,7 @@ import android.net.Uri;
 
 /**
  * Created by Hugh on 7/12/2017.
+ * This file holds the Drop of Honey Application global constants
  */
 
 public class DOH_Constants {

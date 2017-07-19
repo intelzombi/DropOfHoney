@@ -2,6 +2,11 @@ package com.gunsnhony.dropofhoney.support;
 
 /**
  * Created by Hugh on 7/14/2017.
+ * This is the the XML parsing phase of the Rest retrieval.  This class uses
+ * the XMLPullParser mechanism to parse an xml string that is retrieved from
+ * Flickr server.  the XMLPullParser uses the following spec: "http://www.xmlpull.org/"
+ * It also has some utility functions to assemble the needed Rest URL's
+ * FlickrRestXML depends on the EasyRest Class for it's Http connection and byte retrieval.
  */
 import android.net.Uri;
 import android.support.v4.util.ArraySet;
@@ -110,6 +115,7 @@ public class FlickrRestXML {
                     success = true;
                 } catch (XmlPullParserException xppe)
                 {
+                    Log.e("FlickerRest", "Trouble Maker URL : " + urlString);
                     Log.e("FlickrRest", "Owner photo XMLPullParserException :" + xppe.getLocalizedMessage());
                     if(tries == max_tries)
                         throw xppe;
@@ -118,6 +124,8 @@ public class FlickrRestXML {
         return photos;
     }
 
+    // URL to build
+    //"https://farm" + farmId + ".staticflickr.com/" + serverId + "/" + photoId + "_" +  secret + "_" + size + "." + fileType;
     public static String assembleFlickerSearchURL(String searchString){
         String url = Uri.parse(DOH_Constants.FlikrApiRoot).buildUpon()
                 .appendQueryParameter("method", DOH_Constants.FlikrPhotoSearch)
@@ -125,11 +133,10 @@ public class FlickrRestXML {
                 .appendQueryParameter("extras", DOH_Constants.FlikrPhotoSearchThumbExtra)
                 .appendQueryParameter("text", searchString)
                 .build().toString();
-        //"https://farm" + farmId + ".staticflickr.com/" + serverId + "/" + photoId + "_" +  secret + "_" + size + "." + fileType;
         return url;
     }
 
-
+    // URL to build
     //https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=<API KEY GOES HERE>&user_id=56603367%40N03&extras=url_s&format=rest
     public static String assembleFlickerOwnerSearchURL(String userId, String url_size){
         String url = Uri.parse(DOH_Constants.FlikrApiRoot).buildUpon()
@@ -156,5 +163,4 @@ public class FlickrRestXML {
         String url = "https://farm" + photo.farmId + ".staticflickr.com/" + photo.serverId + "/" + photo.photoId + "_" + photo.secret + "_" + size + ".jpg";
         return url;
     }
-
 }

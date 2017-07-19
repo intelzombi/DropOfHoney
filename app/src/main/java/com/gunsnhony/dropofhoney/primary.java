@@ -11,6 +11,10 @@ import android.util.Log;
 
 /**
  * Created by Hugh on 7/12/2017.
+ * This is the Entry Activity.  There is a simple mechanism to Create and
+ * attach the ImageBrowser fragment.  There is also a function used
+ * by the fragment to make itself visible once the onViewCreated is called
+ * by the fragment.
  */
 
 public class primary extends FragmentActivity {
@@ -45,5 +49,4 @@ public class primary extends FragmentActivity {
         ft.show(f);
         ft.commit();
     }
-
  }

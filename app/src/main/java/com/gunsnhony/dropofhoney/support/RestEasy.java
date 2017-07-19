@@ -5,13 +5,15 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;  // vs android.net.Uri vs java.net.URI :=>  Google vs Java:  Ip4 vs Ip4 & Ip6: simple exceptions vs verbose exceptions
+//   android.net.Uri vs java.net.URI
+//            Google vs Java:
+//               Ip4 vs Ip4 & Ip6:
+// simple exceptions vs verbose exceptions
 import java.net.URL;
 import java.util.Arrays;
 
@@ -19,23 +21,13 @@ import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Created by Hugh on 7/13/2017.
+ * RestEasy class implements the HttpURLConnection api as opposed to the
+ * apache http classes.  Ultimately RestEasy is the class that takes the URL
+ * and returns the data in a form usable by the FlickrRestXML class.
+ * URL in,  XML String out,  Bitmap out.
  */
 
 public class RestEasy {
-
-    public static Bitmap readByteToBitmap(InputStream in ) throws IOException
-    {
-        byte[] bytes = new byte[1024];
-        int bytesRead = 0;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            do {
-                bytesRead = in.read(bytes);
-                baos.write(bytes, 0, bytesRead);
-                Arrays.fill(bytes,(byte)0);
-            }while(bytesRead != -1);
-        byte[] bmBA = baos.toByteArray();
-        return BitmapFactory.decodeByteArray(bmBA,0,bmBA.length);
-    }
 
     public static String urlToString(String urlString)
     {
@@ -62,6 +54,8 @@ public class RestEasy {
                     Arrays.fill(bytes,(byte)0);
                 }while(bytesRead != -1);
 
+            } catch (MalformedURLException mue) {
+                Log.e("RestEasy", "Malformed URL: " + urlString + "\n" + mue.getLocalizedMessage(), mue);
             } catch (IOException e) {
                 if (urlConnection != null)
                     urlConnection.getErrorStream();
@@ -114,9 +108,5 @@ public class RestEasy {
             Log.e("RestEasy", e.getMessage());
         }
         return bm;
-    }
-
-    public static Bitmap GetPhotoRestStream( String urlString) {
-        return urlToBitmap(urlString);
     }
 }

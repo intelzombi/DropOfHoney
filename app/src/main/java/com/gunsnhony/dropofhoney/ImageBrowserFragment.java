@@ -36,6 +36,46 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Created by Hugh on 7/12/2017.
+ * The ImageBrowserFragment contains the main view for Drop of Honey
+ * It uses the image_viewer.xml layout.
+ * The main functionality of the view is to Display an Image that was
+ * retrieved by either the GetRecent or Search Owner Rest requests.
+ * From a view it displays said image along with the title, and two
+ * user option buttons to retrieve either more GetRecent photos or
+ * choose to inspect the stream of the owner for the photo that is
+ * currently being presented.  The image has a ImageTouchListner that
+ * listens to Gestures.  The image listens specifically for the Fling
+ * gesture which is used to progress the photo by spinning the photo
+ * queue and presenting the next photo.
+ *
+ * There is a list of radio buttons that allow the user to choose different
+ * resolution photos to be retrieved.  thumbnail, small, and medium sizes.
+ * The ImageView used to present the Photo bitmap is constrained by size.
+ * That is the photos are scaled up to fit. thumbnails can tend to be grainy
+ * small is a bit harder to tell and medium looks pretty good. Since larger
+ * bitmaps require more bandwidth and memory resources the user can decide
+ * to use the thumbnail to zip through the Flickr stream but up the size
+ * when looking at a user stream of interest.
+ *
+ * The Threading to keep the UI thread from ANR baiting is broken up into two parts.
+ * There is the RestResponseAsyncTask which is an inner class to this Fragment which
+ * handles the initial retrieval of the XML Rest strings containing the list
+ * of photo details desired for download. The PhotoFillerHandler is the work horse
+ * and is more appropriate to do all the retrieval of the individual photos. The
+ * HandlerThread was chosen specifically because it has a looper or "message pump"
+ * This class has an instance of this PhotoFillerHandler.
+ *
+ * The OnCreate initializes the PhotoFillerHandler, sets up the PhotoRetrieved callback
+ * that the handler uses to give us back the completed Photo instance. It also starts the
+ * initial cycle of GetRecent Rest calls and the retrieval and population of the
+ * photo queues.
+ *
+ * The OnViewCreated simply calls the primary activities show fragment function to make the
+ * initialized fragment visible.
+ *
+ * The OnCreate initializes all the view elements as well as OnClickListener functionality
+ * It populates the Default Stock Photos used to present until photos are retrieved.
+ *
  */
 
 public class ImageBrowserFragment extends Fragment{
@@ -53,7 +93,7 @@ public class ImageBrowserFragment extends Fragment{
     public FlickrRestXML frx = new FlickrRestXML();
     public PhotoFillerHandler pfHandler;
 
-    private String Tag = "ImageBrowser";
+    private static final String TAG = "ImageBrowser";
     private String requestImageSize = DOH_Constants.FlikrPhotoSearchSmallExtra;
     private String ownerLink = "";
     public static int ownerQueueSize = 120;
@@ -73,7 +113,7 @@ public class ImageBrowserFragment extends Fragment{
         }
 
         protected ArrayList<Photo> doInBackground(String ... restCalls) {
-            Log.d(Tag, "RestResponseTask start doInBackground");
+            Log.d(TAG, "RestResponseTask start doInBackground");
             ArrayList<Photo> photos = new ArrayList<>();
             FlickrRestXML frx = new FlickrRestXML();
             Activity activity = getActivity();
@@ -109,7 +149,7 @@ public class ImageBrowserFragment extends Fragment{
         protected void onPostExecute(ArrayList<Photo> photos)
         {
             rrLisener.onRestReady(photos);
-            Log.d(Tag, "RestResponseTask RestReady photos returned to rrListener");
+            Log.d(TAG, "RestResponseTask RestReady photos returned to rrListener");
         }
     }
     
@@ -123,7 +163,7 @@ public class ImageBrowserFragment extends Fragment{
         RestResponseTask rrt = new RestResponseTask(new RestReadyListener() {
             @Override
             public void onRestReady(ArrayList<Photo> photos) {
-                Log.d(Tag, "Processing RestReady photos to Photo Filler Handler");
+                Log.d(TAG, "Processing RestReady photos to Photo Filler Handler");
 
                 for(int i = 0; i < photos.size(); i++)
                 {
@@ -132,36 +172,25 @@ public class ImageBrowserFragment extends Fragment{
             }
         });
         rrt.execute(restCallType, urlString, size, count);
-        // TODO Do I need this really?
-        try {
-            rrt.get();
-        } catch (CancellationException ce) {
-            ce.printStackTrace();
-        } catch (ExecutionException ee) {
-            ee.printStackTrace();
-        } catch (InterruptedException ie) {
-            ie.printStackTrace();
-        }
-
         return true;
     }
 
     @Override
     public void onAttachFragment(Fragment childFragment) {
         super.onAttachFragment(childFragment);
-        Log.d(Tag, "onAttachFragment");
+        Log.d(TAG, "onAttachFragment");
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        Log.d(Tag, "onAttach");
+        Log.d(TAG, "onAttach");
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(Tag, "onCreate");
+        Log.d(TAG, "onCreate");
         context = getContext();
         pfHandler = new PhotoFillerHandler(new Handler());
         pfHandler.setListener(new PhotoFillerHandler.photoListener() {
@@ -171,7 +200,7 @@ public class ImageBrowserFragment extends Fragment{
                     AllPhotos.getPhotoDeque().push(photo);
                 if(photo.streamOrigin == frx.FlickerOwnerSearchType)
                     AllPhotos.getPhotoOwnerDeque().push(photo);
-                Log.d(Tag, "Photo Retrieved from Photo Filler Handler : Push to Photo Deque");
+                Log.d(TAG, "Photo Retrieved from Photo Filler Handler : Push to Photo Deque");
             }
         });
 
@@ -183,7 +212,7 @@ public class ImageBrowserFragment extends Fragment{
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.d(Tag, "onCreateView");
+        Log.d(TAG, "onCreateView");
         if(imageBrowserView == null)
         {
             imageBrowserView = LayoutInflater.from(getActivity()).inflate(R.layout.image_viewer, null);
@@ -197,7 +226,7 @@ public class ImageBrowserFragment extends Fragment{
         FlkrOwnerBtn = (Button) imageBrowserView.findViewById(R.id.ownerSearchButton);
 
         initializeDefaultImage();
-
+        ownerLink = AllPhotos.DefaultPhoto.retrieveURL;
         thumbnailRadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -249,15 +278,14 @@ public class ImageBrowserFragment extends Fragment{
             recentImage.setImageBitmap(photo.bitmap);
             titleView.setText(photo.title);
         }else{
-            recentImage.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.tree));
-            titleView.setText("Abstact Tree");
+            recentImage.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.dragontree));
+            titleView.setText("Dragon Tree");
             photo = new Photo();
-            photo.bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.fractal);
-            photo.size = requestImageSize;
+            photo.bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.teapot);
+            photo.size = "url_n";//requestImageSize;
             photo.owner = "56603367@N03";
-            photo.retrieveURL =  frx.assembleFlickerOwnerSearchURL(photo.owner, photo.size );
-            photo.title = "Simple Fractal";
-            photo.retrieveURL = "https://farm3.staticflickr.com/2831/11467918723_dea8ddee9b_s.jpg";
+            photo.retrieveURL =  frx.assembleFlickerOwnerSearchURL(photo.owner, photo.size);
+            photo.title = "Dragon Tree";
             AllPhotos.DefaultPhoto = photo;
             AllPhotos.getPhotoDeque().push(photo);
             AllPhotos.getPhotoOwnerDeque().push(photo);
@@ -279,10 +307,10 @@ public class ImageBrowserFragment extends Fragment{
                                     if (xDistance < Max_Swipe_Distance && yDistance < Max_Swipe_Distance &&
                                             velocityX > Min_Swipe_Velocity ) {
                                         if (e1.getX() > e2.getX()) {
-                                            Log.d(Tag, "Left <- Right");
+                                            Log.d(TAG, "Left <- Right");
                                             NextImage();
                                         } else {
-                                            Log.d(Tag, "Left -> Right");
+                                            Log.d(TAG, "Left -> Right");
                                             PrevImage();
                                         }
                                         result = true;
@@ -304,6 +332,7 @@ public class ImageBrowserFragment extends Fragment{
 
                                 @Override
                                 public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                                    // return false so event will be passed onto the onFling Override.
                                     return false;
                                 }
 
@@ -329,7 +358,7 @@ public class ImageBrowserFragment extends Fragment{
 
     public void SpinQueue(boolean forward)
     {
-        Log.d(Tag, "SpinQueue");
+        Log.d(TAG, "SpinQueue");
         if(AllPhotos.getPhotoDeque().size() > 1) {
             
             if(AllPhotos.isOwner)
