@@ -76,7 +76,8 @@ public class FlickrRestXML {
             for (String v : requestSet) {
                 idSet.add(v);
             }
-            idSet.clear();
+            if(idSet.size() > 1000)
+                idSet.clear();
         }
         return photos;
     }
